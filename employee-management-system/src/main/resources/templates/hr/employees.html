@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Employees')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: hrSidebar('employees')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Employees')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="card">
+    <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
+        <form class="d-flex gap-2" th:action="@{/hr/employees}" method="get">
+            <input type="search" class="form-control form-control-sm" name="q" th:value="${q}" placeholder="Search name, code, email, department...">
+            <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+        </form>
+        <a class="btn btn-sm btn-primary" th:href="@{/hr/employees/new}"><i class="bi bi-plus-lg me-1"></i>Add employee</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr><th>Code</th><th>Name</th><th>Department</th><th>Designation</th><th>Joined</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="e : ${employees}">
+                <td th:text="${e.employeeCode}"></td>
+                <td><strong th:text="${e.fullName}"></strong><br><small class="text-muted" th:text="${e.email}"></small></td>
+                <td th:text="${e.department != null ? e.department.name : '-'}"></td>
+                <td th:text="${e.designation}"></td>
+                <td th:text="${#temporals.format(e.joinDate, 'dd MMM yyyy')}"></td>
+                <td>
+                    <span class="badge" th:classappend="${e.active} ? 'bg-success' : 'bg-secondary'" th:text="${e.active} ? 'Active' : 'Inactive'"></span>
+                    <span class="badge bg-info text-dark" th:if="${e.user.role.name() == 'ROLE_HR'}">HR</span>
+                </td>
+                <td class="text-end text-nowrap">
+                    <a class="btn btn-sm btn-outline-primary" th:href="@{/hr/employees/{id}/edit(id=${e.id})}" title="Edit"><i class="bi bi-pencil"></i></a>
+                    <form class="d-inline" th:action="@{/hr/employees/{id}/toggle(id=${e.id})}" method="post">
+                        <button class="btn btn-sm" th:classappend="${e.active} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                th:title="${e.active} ? 'Deactivate' : 'Activate'" type="submit">
+                            <i class="bi" th:classappend="${e.active} ? 'bi-person-dash' : 'bi-person-check'"></i></button>
+                    </form>
+                    <form class="d-inline" th:action="@{/hr/employees/{id}/delete(id=${e.id})}" method="post" data-confirm="Delete this employee permanently?">
+                        <button class="btn btn-sm btn-outline-danger" type="submit" title="Delete"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(employees)}"><td colspan="7" class="text-center text-muted py-4">No employees found.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white" th:if="${page.totalPages > 1}">
+        <nav th:replace="~{fragments/layout :: pager(${page}, ${pagerUrl}, ${pagerExtra})}"></nav>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

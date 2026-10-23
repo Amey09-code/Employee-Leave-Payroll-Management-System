@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<div class="error-wrap">
+    <div>
+        <div class="error-code">!</div>
+        <h3 class="mb-2">Error</h3>
+        <p class="text-muted mb-4" th:text="${message != null ? message : 'An unexpected error occurred.'}">An unexpected error occurred.</p>
+        <a href="/" class="btn btn-primary">Back to home</a>
+    </div>
+</div>
+</body>
+</html>

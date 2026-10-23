@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Password & Biometrics')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: employeeSidebar('security')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Password & Biometrics')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div th:replace="~{fragments/layout :: security(${passkeys}, ${passwordForm})}"></div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Holiday Calendar')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: employeeSidebar('holidays')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Holiday Calendar')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="card">
+    <div class="card-header">Upcoming company holidays</div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center" th:each="h : ${holidays}">
+            <span><i class="bi bi-calendar-event text-primary me-2"></i><span th:text="${h.name}"></span></span>
+            <strong th:text="${#temporals.format(h.holidayDate, 'EEEE, dd MMMM yyyy')}"></strong>
+        </li>
+        <li class="list-group-item text-muted text-center py-4" th:if="${#lists.isEmpty(holidays)}">No upcoming holidays.</li>
+    </ul>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Profile')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: employeeSidebar('profile')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('My Profile')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Employment details</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Name</span><strong th:text="${employee.fullName}"></strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Employee ID</span><strong th:text="${employee.employeeCode}"></strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Email</span><strong th:text="${employee.email}"></strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Department</span><strong th:text="${employee.department != null ? employee.department.name : '-'}"></strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Designation</span><strong th:text="${employee.designation}"></strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Joined</span><strong th:text="${#temporals.format(employee.joinDate, 'dd MMM yyyy')}"></strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Date of birth</span><strong th:text="${#temporals.format(employee.dateOfBirth, 'dd MMM yyyy')}"></strong></li>
+            </ul>
+            <div class="card-footer bg-white small text-muted">To change name, email, department or salary details, contact HR.</div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Contact details</div>
+            <div class="card-body">
+                <form th:action="@{/employee/profile}" th:object="${profileForm}" method="post" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input class="form-control" th:field="*{phone}" th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{phone}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea class="form-control" rows="3" th:field="*{address}" th:classappend="${#fields.hasErrors('address')} ? 'is-invalid'"></textarea>
+                        <div class="invalid-feedback" th:errors="*{address}"></div>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

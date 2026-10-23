@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Dashboard')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: employeeSidebar('dashboard')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('My Dashboard')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<h4 class="mb-4">Welcome back, <span th:text="${overview.employee().firstName}">Employee</span> 👋</h4>
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card kpi green h-100"><div class="card-body">
+            <div class="text-muted small">Today's attendance</div>
+            <div th:if="${overview.attendanceToday() == null}" class="mt-1">
+                <span class="badge bg-secondary">Not checked in</span>
+                <form th:action="@{/employee/attendance/check-in}" method="post" class="mt-2">
+                    <button class="btn btn-sm btn-success" type="submit">Check in</button></form>
+            </div>
+            <div th:if="${overview.attendanceToday() != null}" class="mt-1">
+                <div>In: <strong th:text="${#temporals.format(overview.attendanceToday().checkIn, 'HH:mm')}"></strong></div>
+                <div th:if="${overview.attendanceToday().checkOut != null}">Out: <strong th:text="${#temporals.format(overview.attendanceToday().checkOut, 'HH:mm')}"></strong></div>
+                <form th:if="${overview.attendanceToday().checkOut == null}" th:action="@{/employee/attendance/check-out}" method="post" class="mt-2">
+                    <button class="btn btn-sm btn-warning" type="submit">Check out</button></form>
+            </div>
+        </div></div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card kpi h-100"><div class="card-body">
+            <div class="text-muted small">Leave balance</div>
+            <div class="value" th:text="${overview.leaveBalance().remaining()}">0</div>
+            <div class="small text-muted" th:text="'of ' + ${overview.leaveBalance().allowance()} + ' days (' + ${overview.leaveBalance().used()} + ' used)'"></div>
+        </div></div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card kpi amber h-100"><div class="card-body">
+            <div class="text-muted small">Latest net salary</div>
+            <div th:if="${overview.latestSalary() != null}">
+                <div class="value" th:text="${#numbers.formatDecimal(overview.latestSalary().netSalary,1,'COMMA',2,'POINT')}">0</div>
+                <div class="small text-muted" th:text="${overview.latestSalary().periodLabel}"></div>
+            </div>
+            <div th:if="${overview.latestSalary() == null}" class="text-muted mt-2">No payslip yet</div>
+        </div></div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card kpi red h-100"><div class="card-body">
+            <div class="text-muted small">My details</div>
+            <div class="fw-bold" th:text="${overview.employee().designation}"></div>
+            <div class="small text-muted" th:text="${overview.employee().department != null ? overview.employee().department.name : '-'}"></div>
+            <div class="small text-muted" th:text="${overview.employee().employeeCode}"></div>
+        </div></div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header d-flex justify-content-between"><span><i class="bi bi-calendar-event me-2"></i>Upcoming holidays</span>
+        <a th:href="@{/employee/holidays}" class="small">View all</a></div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between" th:each="h : ${overview.upcomingHolidays()}">
+            <span th:text="${h.name}"></span><strong th:text="${#temporals.format(h.holidayDate, 'EEE, dd MMM yyyy')}"></strong>
+        </li>
+        <li class="list-group-item text-muted text-center" th:if="${#lists.isEmpty(overview.upcomingHolidays())}">No upcoming holidays.</li>
+    </ul>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

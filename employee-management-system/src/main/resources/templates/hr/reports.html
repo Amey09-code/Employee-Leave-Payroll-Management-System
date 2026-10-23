@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Reports')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: hrSidebar('reports')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Reports')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<form class="row g-2 mb-4 align-items-end" th:action="@{/hr/reports}" method="get">
+    <div class="col-auto"><label class="form-label mb-0 small">Month</label>
+        <select class="form-select form-select-sm" name="month">
+            <option th:each="m : ${#numbers.sequence(1,12)}" th:value="${m}" th:selected="${report.month() == m}"
+                    th:text="${T(java.time.Month).of(m).getDisplayName(T(java.time.format.TextStyle).FULL, T(java.util.Locale).ENGLISH)}"></option>
+        </select></div>
+    <div class="col-auto"><label class="form-label mb-0 small">Year</label>
+        <input type="number" class="form-control form-control-sm" name="year" th:value="${report.year()}" style="width:90px"></div>
+    <div class="col-auto"><button class="btn btn-sm btn-primary" type="submit">Update</button></div>
+</form>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Headcount by department</div>
+            <div class="card-body">
+                <div class="mb-3" th:each="r : ${report.headcount()}">
+                    <div class="d-flex justify-content-between small"><span th:text="${r.department().name}"></span><strong th:text="${r.employeeCount()}"></strong></div>
+                    <div class="progress" style="height:8px"><div class="progress-bar" th:style="'width:' + ${r.employeeCount() * 20 > 100 ? 100 : r.employeeCount() * 20} + '%'"></div></div>
+                </div>
+                <div class="text-muted text-center" th:if="${#lists.isEmpty(report.headcount())}">No departments.</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Leave requests by status</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center" th:each="e : ${report.leavesByStatus()}">
+                    <span class="badge" th:classappend="${e.key.badgeClass}" th:text="${e.key}"></span>
+                    <strong th:text="${e.value}">0</strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">Payroll - last 6 months</div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light"><tr><th>Month</th><th class="text-end">Payslips</th><th class="text-end">Gross</th><th class="text-end">Deductions</th><th class="text-end">Net</th></tr></thead>
+                    <tbody>
+                    <tr th:each="p : ${report.payrollTrend()}">
+                        <td th:text="${p.label()}"></td>
+                        <td class="text-end" th:text="${p.count()}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(p.gross(),1,'COMMA',2,'POINT')}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(p.deductions(),1,'COMMA',2,'POINT')}"></td>
+                        <td class="text-end fw-bold" th:text="${#numbers.formatDecimal(p.net(),1,'COMMA',2,'POINT')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">Attendance summary for the selected month</div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light"><tr><th>Employee</th><th>Department</th><th class="text-end">Days worked</th><th class="text-end">Working days</th><th style="width:30%">Rate</th></tr></thead>
+                    <tbody>
+                    <tr th:each="a : ${report.attendance()}">
+                        <td th:text="${a.employee()}"></td>
+                        <td th:text="${a.department()}"></td>
+                        <td class="text-end" th:text="${a.daysWorked()}"></td>
+                        <td class="text-end" th:text="${a.workingDays()}"></td>
+                        <td><div class="progress" style="height:8px"><div class="progress-bar bg-success"
+                              th:style="'width:' + ${a.workingDays() == 0 ? 0 : (a.daysWorked() * 100 / a.workingDays() > 100 ? 100 : a.daysWorked() * 100 / a.workingDays())} + '%'"></div></div></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

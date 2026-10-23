@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Settings')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: hrSidebar('settings')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Settings')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-building me-2"></i>Company, leave &amp; payroll</div>
+            <div class="card-body">
+                <form th:action="@{/hr/settings}" th:object="${settingsForm}" method="post" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">Company name (shown on payslips)</label>
+                        <input class="form-control" th:field="*{companyName}" th:classappend="${#fields.hasErrors('companyName')} ? 'is-invalid'">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Annual leave allowance (days, excludes unpaid leave)</label>
+                        <input type="number" class="form-control" th:field="*{annualLeaveAllowance}" th:classappend="${#fields.hasErrors('annualLeaveAllowance')} ? 'is-invalid'">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-4"><label class="form-label">HRA %</label>
+                            <input type="number" step="0.01" class="form-control" th:field="*{hraPercent}" th:classappend="${#fields.hasErrors('hraPercent')} ? 'is-invalid'"></div>
+                        <div class="col-4"><label class="form-label">Allowance %</label>
+                            <input type="number" step="0.01" class="form-control" th:field="*{allowancePercent}" th:classappend="${#fields.hasErrors('allowancePercent')} ? 'is-invalid'"></div>
+                        <div class="col-4"><label class="form-label">PF %</label>
+                            <input type="number" step="0.01" class="form-control" th:field="*{pfPercent}" th:classappend="${#fields.hasErrors('pfPercent')} ? 'is-invalid'"></div>
+                    </div>
+                    <div class="form-text mb-3">Percentages apply to the basic salary of payslips generated from now on.</div>
+                    <button class="btn btn-primary" type="submit">Save settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-calendar-event me-2"></i>Company holidays</div>
+            <div class="card-body">
+                <form th:action="@{/hr/settings/holidays}" th:object="${holidayForm}" method="post" class="row g-2 mb-3" novalidate>
+                    <div class="col-sm-4"><input type="date" class="form-control" th:field="*{holidayDate}" th:classappend="${#fields.hasErrors('holidayDate')} ? 'is-invalid'"></div>
+                    <div class="col-sm-5"><input class="form-control" th:field="*{name}" placeholder="Holiday name" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"></div>
+                    <div class="col-sm-3"><button class="btn btn-outline-primary w-100" type="submit">Add</button></div>
+                </form>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" th:each="h : ${holidays}">
+                        <span><strong th:text="${#temporals.format(h.holidayDate, 'dd MMM yyyy')}"></strong> &middot; <span th:text="${h.name}"></span></span>
+                        <form th:action="@{/hr/settings/holidays/{id}/delete(id=${h.id})}" method="post" class="m-0" data-confirm="Remove this holiday?">
+                            <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </li>
+                    <li class="list-group-item text-muted text-center" th:if="${#lists.isEmpty(holidays)}">No holidays configured.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<h5 class="mb-3">My account security</h5>
+<div th:replace="~{fragments/layout :: security(${passkeys}, ${passwordForm})}"></div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Leave')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: employeeSidebar('leaves')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('My Leave')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card mb-3 kpi"><div class="card-body">
+            <div class="text-muted small">Leave balance this year</div>
+            <div class="value" th:text="${balance.remaining()}">0</div>
+            <div class="small text-muted" th:text="'of ' + ${balance.allowance()} + ' days, ' + ${balance.used()} + ' used'"></div>
+        </div></div>
+        <div class="card">
+            <div class="card-header">Apply for leave</div>
+            <div class="card-body">
+                <form th:action="@{/employee/leaves}" th:object="${leaveForm}" method="post" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" th:field="*{leaveType}" th:classappend="${#fields.hasErrors('leaveType')} ? 'is-invalid'">
+                            <option value="">-- choose --</option>
+                            <option th:each="t : ${leaveTypes}" th:value="${t}" th:text="${t.label}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{leaveType}"></div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6"><label class="form-label">From</label>
+                            <input type="date" class="form-control" th:field="*{startDate}" th:classappend="${#fields.hasErrors('startDate')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{startDate}"></div></div>
+                        <div class="col-6"><label class="form-label">To</label>
+                            <input type="date" class="form-control" th:field="*{endDate}" th:classappend="${#fields.hasErrors('endDate')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{endDate}"></div></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reason</label>
+                        <textarea class="form-control" rows="3" th:field="*{reason}" th:classappend="${#fields.hasErrors('reason')} ? 'is-invalid'"></textarea>
+                        <div class="invalid-feedback" th:errors="*{reason}"></div>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">Submit request</button>
+                    <div class="form-text">Weekends are not counted.</div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">My requests</div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light"><tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th>HR comment</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="l : ${leaves}">
+                        <td th:text="${l.leaveType.label}"></td>
+                        <td th:text="${#temporals.format(l.startDate,'dd MMM')} + ' - ' + ${#temporals.format(l.endDate,'dd MMM yyyy')}"></td>
+                        <td th:text="${l.days}"></td>
+                        <td><span class="badge" th:classappend="${l.status.badgeClass}" th:text="${l.status}"></span></td>
+                        <td th:text="${l.hrComment}"></td>
+                        <td>
+                            <form th:if="${l.status.name() == 'PENDING'}" th:action="@{/employee/leaves/{id}/cancel(id=${l.id})}" method="post" data-confirm="Cancel this request?">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button></form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(leaves)}"><td colspan="6" class="text-center text-muted py-4">No leave requests yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white" th:if="${page.totalPages > 1}">
+                <nav th:replace="~{fragments/layout :: pager(${page}, ${pagerUrl}, ${pagerExtra})}"></nav>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

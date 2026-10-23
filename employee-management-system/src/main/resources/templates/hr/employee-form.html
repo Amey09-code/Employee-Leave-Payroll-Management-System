@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Employee')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: hrSidebar('employees')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Employee')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="card">
+    <div class="card-header" th:text="${editing} ? 'Edit employee' : 'Add employee'">Employee</div>
+    <div class="card-body">
+        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+            <div th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
+        </div>
+        <form th:action="${editing} ? @{/hr/employees/{id}(id=${employeeForm.id})} : @{/hr/employees}"
+              th:object="${employeeForm}" method="post" novalidate>
+            <h6 class="text-muted text-uppercase small">Personal details</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">First name</label>
+                    <input class="form-control" th:field="*{firstName}" th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last name</label>
+                    <input class="form-control" th:field="*{lastName}" th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{lastName}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{email}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    <input class="form-control" th:field="*{phone}" th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{phone}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date of birth</label>
+                    <input type="date" class="form-control" th:field="*{dateOfBirth}" th:classappend="${#fields.hasErrors('dateOfBirth')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{dateOfBirth}"></div>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Address</label>
+                    <input class="form-control" th:field="*{address}">
+                </div>
+            </div>
+
+            <h6 class="text-muted text-uppercase small">Job &amp; pay</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Department</label>
+                    <select class="form-select" th:field="*{departmentId}">
+                        <option value="">-- none --</option>
+                        <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Designation</label>
+                    <input class="form-control" th:field="*{designation}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Join date</label>
+                    <input type="date" class="form-control" th:field="*{joinDate}" th:classappend="${#fields.hasErrors('joinDate')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{joinDate}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Basic monthly salary</label>
+                    <input type="number" step="0.01" min="0" class="form-control" th:field="*{basicSalary}" th:classappend="${#fields.hasErrors('basicSalary')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{basicSalary}"></div>
+                </div>
+            </div>
+
+            <h6 class="text-muted text-uppercase small">Login account</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Username</label>
+                    <input class="form-control" th:field="*{username}" th:readonly="${editing}" th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'" autocomplete="off">
+                    <div class="invalid-feedback" th:errors="*{username}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Role</label>
+                    <select class="form-select" th:field="*{role}">
+                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r.name() == 'ROLE_HR' ? 'HR' : 'Employee'}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" th:text="${editing} ? 'Reset password (optional)' : 'Initial password'">Password</label>
+                    <input type="password" class="form-control" th:field="*{password}" th:required="${!editing}" autocomplete="new-password">
+                    <div class="form-text">At least 8 characters with a letter and a digit.</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i>Save</button>
+            <a class="btn btn-outline-secondary" th:href="@{/hr/employees}">Cancel</a>
+        </form>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

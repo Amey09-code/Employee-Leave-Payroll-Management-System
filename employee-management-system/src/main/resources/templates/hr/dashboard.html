@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('HR Dashboard')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: hrSidebar('dashboard')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('HR Dashboard')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card kpi"><div class="card-body">
+            <div class="text-muted small">Total employees (active)</div>
+            <div class="value" th:text="${stats.totalEmployees()}">0</div>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card kpi green"><div class="card-body">
+            <div class="text-muted small">Present today</div>
+            <div class="value" th:text="${stats.presentToday()}">0</div>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card kpi red"><div class="card-body">
+            <div class="text-muted small">Absent today</div>
+            <div class="value" th:text="${stats.absentToday()}">0</div>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card kpi amber"><div class="card-body">
+            <div class="text-muted small">Pending leave requests</div>
+            <div class="value" th:text="${stats.pendingLeaves()}">0</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-cash-coin me-2"></i>Payroll summary
+                <span class="text-muted small ms-1" th:text="'(' + ${stats.payrollMonth()} + '/' + ${stats.payrollYear()} + ')'"></span></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between"><span>Payslips generated</span><strong th:text="${stats.payslipsGenerated()}">0</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Gross payroll</span><strong th:text="${#numbers.formatDecimal(stats.payrollGross(), 1, 'COMMA', 2, 'POINT')}">0.00</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Net payroll</span><strong class="text-success" th:text="${#numbers.formatDecimal(stats.payrollNet(), 1, 'COMMA', 2, 'POINT')}">0.00</strong></li>
+            </ul>
+            <div class="card-footer bg-white"><a class="btn btn-sm btn-primary" th:href="@{/hr/payroll}">Open payroll</a></div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-airplane me-2"></i>Pending leave requests</span>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/hr/leaves?status=PENDING}">Review all</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light"><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th></tr></thead>
+                    <tbody>
+                    <tr th:each="l : ${pendingLeaves}">
+                        <td th:text="${l.employee.fullName}"></td>
+                        <td th:text="${l.leaveType.label}"></td>
+                        <td th:text="${#temporals.format(l.startDate,'dd MMM')} + ' - ' + ${#temporals.format(l.endDate,'dd MMM')}"></td>
+                        <td th:text="${l.days}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(pendingLeaves)}"><td colspan="4" class="text-center text-muted py-4">No pending requests.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

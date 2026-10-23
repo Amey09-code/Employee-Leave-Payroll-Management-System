@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Attendance')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: hrSidebar('attendance')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Attendance')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="card"><div class="card-body">
+            <form class="row g-2 align-items-end" th:action="@{/hr/attendance}" method="get">
+                <div class="col-auto"><label class="form-label mb-0 small">Date</label>
+                    <input type="date" class="form-control form-control-sm" name="date" th:value="${date}"></div>
+                <div class="col-auto"><button class="btn btn-sm btn-primary" type="submit">Show</button></div>
+                <div class="col text-end small text-muted">Today: <span class="text-success fw-bold" th:text="${presentToday}">0</span> present,
+                    <span class="text-danger fw-bold" th:text="${absentToday}">0</span> absent</div>
+            </form>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card"><div class="card-body">
+            <form class="row g-2 align-items-end" th:action="@{/hr/attendance/export}" method="get">
+                <div class="col-auto"><label class="form-label mb-0 small">From</label>
+                    <input type="date" class="form-control form-control-sm" name="from" th:value="${date.withDayOfMonth(1)}" required></div>
+                <div class="col-auto"><label class="form-label mb-0 small">To</label>
+                    <input type="date" class="form-control form-control-sm" name="to" th:value="${date}" required></div>
+                <div class="col-auto"><button class="btn btn-sm btn-success" type="submit"><i class="bi bi-download me-1"></i>Export CSV</button></div>
+            </form>
+        </div></div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header">Attendance on <span th:text="${#temporals.format(date, 'EEEE, dd MMM yyyy')}"></span></div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light"><tr><th>Code</th><th>Employee</th><th>Department</th><th>Check in</th><th>Check out</th><th>Worked</th><th>Status</th></tr></thead>
+            <tbody>
+            <tr th:each="a : ${records}">
+                <td th:text="${a.employee.employeeCode}"></td>
+                <td th:text="${a.employee.fullName}"></td>
+                <td th:text="${a.employee.department != null ? a.employee.department.name : '-'}"></td>
+                <td th:text="${#temporals.format(a.checkIn, 'HH:mm')}"></td>
+                <td th:text="${#temporals.format(a.checkOut, 'HH:mm')}"></td>
+                <td th:text="${a.workedHours}"></td>
+                <td><span class="badge" th:classappend="${a.status.badgeClass}" th:text="${a.status}"></span></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(records)}"><td colspan="7" class="text-center text-muted py-4">No attendance records for this date.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white" th:if="${page.totalPages > 1}">
+        <nav th:replace="~{fragments/layout :: pager(${page}, ${pagerUrl}, ${pagerExtra})}"></nav>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

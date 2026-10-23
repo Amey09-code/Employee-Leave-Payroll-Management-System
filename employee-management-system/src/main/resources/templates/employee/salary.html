@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Salary & Payslips')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: employeeSidebar('salary')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Salary & Payslips')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="card">
+    <div class="card-header">Salary history</div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr><th>Period</th><th class="text-end">Basic</th><th class="text-end">HRA</th><th class="text-end">Allowances</th><th class="text-end">Bonus</th><th class="text-end">Gross</th><th class="text-end">Deductions</th><th class="text-end">Net</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${salaries}">
+                <td th:text="${s.periodLabel}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.basic,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.hra,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.allowances,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.bonus,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.grossSalary,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.totalDeductions,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end fw-bold text-success" th:text="${#numbers.formatDecimal(s.netSalary,1,'COMMA',2,'POINT')}"></td>
+                <td><span class="badge" th:classappend="${s.status.badgeClass}" th:text="${s.status}"></span></td>
+                <td><a class="btn btn-sm btn-outline-primary" th:href="@{/employee/salary/{id}/payslip(id=${s.id})}"><i class="bi bi-file-earmark-pdf me-1"></i>Payslip</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(salaries)}"><td colspan="10" class="text-center text-muted py-4">No payslips available yet.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

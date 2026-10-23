@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Salary & Payroll')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: hrSidebar('payroll')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('Salary & Payroll')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="card mb-4">
+    <div class="card-header"><i class="bi bi-calculator me-2"></i>Generate payroll</div>
+    <div class="card-body">
+        <form th:action="@{/hr/payroll/generate}" th:object="${payrollForm}" method="post" class="row g-3 align-items-end" novalidate>
+            <div class="col-md-3">
+                <label class="form-label">Employee</label>
+                <select class="form-select" th:field="*{employeeId}">
+                    <option value="">All active employees</option>
+                    <option th:each="e : ${employees}" th:value="${e.id}" th:text="${e.fullName + ' (' + e.employeeCode + ')'}"></option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Month</label>
+                <select class="form-select" th:field="*{month}">
+                    <option th:each="m : ${#numbers.sequence(1,12)}" th:value="${m}"
+                            th:text="${T(java.time.Month).of(m).getDisplayName(T(java.time.format.TextStyle).FULL, T(java.util.Locale).ENGLISH)}"></option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Year</label>
+                <input type="number" class="form-control" th:field="*{year}" th:classappend="${#fields.hasErrors('year')} ? 'is-invalid'">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Bonus</label>
+                <input type="number" step="0.01" min="0" class="form-control" th:field="*{bonus}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Other deductions</label>
+                <input type="number" step="0.01" min="0" class="form-control" th:field="*{otherDeductions}">
+            </div>
+            <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">Run</button></div>
+            <div class="col-12 small text-muted">
+                Gross = basic + HRA + allowances + bonus &middot; Net = gross &minus; (PF + tax + other deductions). Percentages are configured in Settings.
+                Existing payslips for the same employee and month are skipped.
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span>Payslips</span>
+        <form class="d-flex gap-2" th:action="@{/hr/payroll}" method="get">
+            <select class="form-select form-select-sm" name="month">
+                <option th:each="m : ${#numbers.sequence(1,12)}" th:value="${m}" th:selected="${filterMonth != null and filterMonth == m}"
+                        th:text="${T(java.time.Month).of(m).getDisplayName(T(java.time.format.TextStyle).SHORT, T(java.util.Locale).ENGLISH)}"></option>
+            </select>
+            <input type="number" class="form-control form-control-sm" name="year" style="width:90px" th:value="${filterYear != null ? filterYear : payrollForm.year}">
+            <button class="btn btn-sm btn-outline-primary" type="submit">Filter</button>
+            <a class="btn btn-sm btn-outline-secondary" th:href="@{/hr/payroll}">All</a>
+        </form>
+    </div>
+    <div class="card-body border-bottom" th:if="${summary != null}">
+        <div class="row text-center">
+            <div class="col"><div class="text-muted small">Payslips</div><strong th:text="${summary.count()}">0</strong></div>
+            <div class="col"><div class="text-muted small">Gross</div><strong th:text="${#numbers.formatDecimal(summary.gross(),1,'COMMA',2,'POINT')}">0</strong></div>
+            <div class="col"><div class="text-muted small">Deductions</div><strong th:text="${#numbers.formatDecimal(summary.deductions(),1,'COMMA',2,'POINT')}">0</strong></div>
+            <div class="col"><div class="text-muted small">Net</div><strong class="text-success" th:text="${#numbers.formatDecimal(summary.net(),1,'COMMA',2,'POINT')}">0</strong></div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr><th>Employee</th><th>Period</th><th class="text-end">Basic</th><th class="text-end">Gross</th><th class="text-end">Deductions</th><th class="text-end">Net</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${salaries}">
+                <td><strong th:text="${s.employee.fullName}"></strong><br><small class="text-muted" th:text="${s.employee.employeeCode}"></small></td>
+                <td th:text="${s.periodLabel}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.basic,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.grossSalary,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(s.totalDeductions,1,'COMMA',2,'POINT')}"></td>
+                <td class="text-end fw-bold" th:text="${#numbers.formatDecimal(s.netSalary,1,'COMMA',2,'POINT')}"></td>
+                <td><span class="badge" th:classappend="${s.status.badgeClass}" th:text="${s.status}"></span></td>
+                <td class="text-end text-nowrap">
+                    <form class="d-inline" th:if="${s.status.name() == 'GENERATED'}" th:action="@{/hr/payroll/{id}/paid(id=${s.id})}" method="post">
+                        <button class="btn btn-sm btn-outline-success" type="submit">Mark paid</button>
+                    </form>
+                    <a class="btn btn-sm btn-outline-primary" th:href="@{/hr/payroll/{id}/payslip(id=${s.id})}" title="Download payslip"><i class="bi bi-file-earmark-pdf"></i></a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(salaries)}"><td colspan="8" class="text-center text-muted py-4">No payslips found.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white" th:if="${page.totalPages > 1}">
+        <nav th:replace="~{fragments/layout :: pager(${page}, ${pagerUrl}, ${pagerExtra})}"></nav>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

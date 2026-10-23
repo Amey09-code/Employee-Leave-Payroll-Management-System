@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Attendance')}"></head>
+<body>
+<div class="app">
+<aside th:replace="~{fragments/layout :: employeeSidebar('attendance')}"></aside>
+<main class="content">
+<header th:replace="~{fragments/layout :: topbar('My Attendance')}"></header>
+<div class="page">
+<div th:replace="~{fragments/layout :: flash}"></div>
+<div class="card mb-4">
+    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <div class="text-muted small" th:text="${#temporals.format(#temporals.createToday(), 'EEEE, dd MMMM yyyy')}">Today</div>
+            <div th:if="${today == null}" class="fs-5">You have not checked in yet.</div>
+            <div th:if="${today != null}" class="fs-5">
+                Checked in at <strong th:text="${#temporals.format(today.checkIn, 'HH:mm')}"></strong>
+                <span th:if="${today.checkOut != null}"> &middot; out at <strong th:text="${#temporals.format(today.checkOut, 'HH:mm')}"></strong></span>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <form th:if="${today == null}" th:action="@{/employee/attendance/check-in}" method="post">
+                <button class="btn btn-success" type="submit"><i class="bi bi-box-arrow-in-right me-1"></i>Check in</button></form>
+            <form th:if="${today != null and today.checkOut == null}" th:action="@{/employee/attendance/check-out}" method="post">
+                <button class="btn btn-warning" type="submit"><i class="bi bi-box-arrow-right me-1"></i>Check out</button></form>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header">Attendance history</div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead class="table-light"><tr><th>Date</th><th>Check in</th><th>Check out</th><th>Worked</th><th>Status</th></tr></thead>
+            <tbody>
+            <tr th:each="a : ${records}">
+                <td th:text="${#temporals.format(a.workDate, 'EEE, dd MMM yyyy')}"></td>
+                <td th:text="${#temporals.format(a.checkIn, 'HH:mm')}"></td>
+                <td th:text="${#temporals.format(a.checkOut, 'HH:mm')}"></td>
+                <td th:text="${a.workedHours}"></td>
+                <td><span class="badge" th:classappend="${a.status.badgeClass}" th:text="${a.status}"></span></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(records)}"><td colspan="5" class="text-center text-muted py-4">No attendance yet.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white" th:if="${page.totalPages > 1}">
+        <nav th:replace="~{fragments/layout :: pager(${page}, ${pagerUrl}, ${pagerExtra})}"></nav>
+    </div>
+</div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
